@@ -1,49 +1,51 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spacecraft GAME</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050914">
+  <title>ARENA SPACE</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="speed-div">200px/s</div>
-
-    <div id="scoreboard-div">
-
-        <div id="p1-points-div" class="points">00</div>
-        <div id="vertical-line-div"></div>
-        <div id="p2-points-div" class="points">00</div>
-        
-    </div>
-
-    <h1 id="text-h1" class="text">Ready?</h1>
-    <p id="text-p" class="text">Press <strong>Enter</strong> or <strong>Space</strong></p>
-
-        <div id="alert-div"></div>
-
-    <div id="safe-zone-div"></div>
-
-    <div id="locator-p1-div" class="locator">P1</div>
-    <div id="locator-p2-div" class="locator">P2</div>
-
-    <div id="spacecraft-p1-div" class="spacecraft">
-
-        <div id="spacecraft-p1-part-1-div" class="spacecraft-part"></div>
-        <div id="spacecraft-p1-part-2-div" class="spacecraft-part"></div>
-
-    </div>
-
-    <div id="spacecraft-p2-div" class="spacecraft">
-
-        <div id="spacecraft-p2-part-1-div" class="spacecraft-part"></div>
-        <div id="spacecraft-p2-part-2-div" class="spacecraft-part"></div>
-
-    </div>
-
-    
-    <script src="script.js"></script>
+  <main id="app">
+    <canvas id="game" aria-label="Arena de batalha espacial"></canvas>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✦</span><div><strong>ARENA SPACE</strong><small>LOCAL MULTIPLAYER COMBAT</small></div></div>
+      <div class="match-info"><span class="live-dot"></span><span id="phase-label">AGUARDANDO PARTIDA</span><span class="separator">/</span><span id="timer">00:00</span></div>
+    </header>
+    <section id="hud" class="hud" aria-live="polite"></section>
+    <section id="menu" class="overlay">
+      <div class="menu-card">
+        <div class="eyebrow"><span></span> COMBATE ESPACIAL LOCAL</div>
+        <h1>DOMINE A<br><em>ARENA.</em></h1>
+        <p class="intro">Entre na batalha. Sobreviva à zona de perigo e seja o último piloto em pé.</p>
+        <div class="setting-row">
+          <label for="player-count">JOGADORES</label>
+          <select id="player-count"><option value="2">2 jogadores</option><option value="3">3 jogadores</option><option value="4" selected>4 jogadores</option></select>
+        </div>
+        <div class="setting-row">
+          <label for="game-mode">MODO DE JOGO</label>
+          <select id="game-mode"><option value="ffa">Todos contra todos</option><option value="teams">Duplas (2x2)</option><option value="training">Treinamento</option></select>
+        </div>
+        <button id="start-button" class="primary-button">INICIAR PARTIDA <span>↗</span></button>
+        <div class="menu-foot">WASD / SETAS / IJKL / NUMPAD · CONTROLES NA TELA</div>
+      </div>
+      <div class="menu-orbit orbit-one"></div><div class="menu-orbit orbit-two"></div>
+    </section>
+    <section id="result" class="overlay hidden">
+      <div class="menu-card result-card">
+        <div class="eyebrow"><span></span> FIM DE PARTIDA</div>
+        <h2 id="result-title">VITÓRIA</h2>
+        <p id="result-copy" class="intro"></p>
+        <div id="result-ranking" class="ranking"></div>
+        <button id="rematch-button" class="primary-button">JOGAR NOVAMENTE <span>↗</span></button>
+        <button id="menu-button" class="secondary-button">VOLTAR AO MENU</button>
+      </div>
+    </section>
+    <div id="toast" class="toast"></div>
+    <footer class="bottom-hint"><span>✦</span> SOBREVIVA. ADAPTE-SE. VENÇA.</footer>
+  </main>
+  <script src="script.js"></script>
 </body>
 </html>
