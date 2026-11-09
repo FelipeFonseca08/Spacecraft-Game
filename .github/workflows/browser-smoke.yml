@@ -1,0 +1,104 @@
+name: Browser smoke test
+
+on:
+  push:
+    branches:
+      - feature/arena-space-foundation
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  chromium-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --no-save playwright
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start local web server
+        run: |
+          python3 -m http.server 4173 > /tmp/arena-space-http.log 2>&1 &
+          echo $! > /tmp/arena-space-http.pid
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/arena-space-http.log
+          exit 1
+
+      - name: Test game startup and controls
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+            const pageErrors = [];
+            const consoleErrors = [];
+            page.on('pageerror', error => pageErrors.push(error.message));
+            page.on('console', message => {
+              if (message.type() === 'error') consoleErrors.push(message.text());
+            });
+
+            try {
+              const response = await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+              if (!response || !response.ok()) throw new Error('Página não carregou corretamente.');
+
+              await page.getByRole('button', { name: /INICIAR PARTIDA/i }).click();
+              await page.waitForFunction(() => document.getElementById('menu').classList.contains('hidden'));
+              await page.waitForFunction(() => document.querySelectorAll('#hud .player-hud').length === 4);
+              await page.waitForTimeout(500);
+
+              const phase = await page.locator('#phase-label').innerText();
+              if (!phase.includes('PARTIDA EM ANDAMENTO')) throw new Error('A partida não mudou para o estado em andamento.');
+
+              const hudCount = await page.locator('#hud .player-hud').count();
+              if (hudCount !== 4) throw new Error('HUD de jogadores incompleto: ' + hudCount);
+
+              const initialTop = await page.locator('#hud .player-hud').first().evaluate(el => el.style.top);
+              await page.keyboard.down('w');
+              await page.waitForTimeout(350);
+              await page.keyboard.up('w');
+              await page.keyboard.down('f');
+              await page.waitForTimeout(100);
+              await page.keyboard.up('f');
+              const charge = await page.locator('#hud .player-hud').first().locator('.charge-value').innerText();
+
+              await page.waitForTimeout(500);
+              if (pageErrors.length) throw new Error('Erros de JavaScript: ' + pageErrors.join(' | '));
+              if (consoleErrors.length) throw new Error('Erros no console: ' + consoleErrors.join(' | '));
+
+              console.log(JSON.stringify({
+                result: 'PASS',
+                pageLoaded: true,
+                gameStarted: true,
+                playerHudCards: hudCount,
+                firstPlayerHudInitialTop: initialTop,
+                firstPlayerShotChargeAfterFire: charge,
+                runtimeErrors: pageErrors.length,
+                consoleErrors: consoleErrors.length
+              }, null, 2));
+            } finally {
+              await browser.close();
+            }
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
