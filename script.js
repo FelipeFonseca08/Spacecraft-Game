@@ -25,7 +25,9 @@ document.getElementById('start-button').addEventListener('click',start);
 document.getElementById('rematch-button').addEventListener('click',start);
 document.getElementById('menu-button').addEventListener('click',()=>{result.classList.add('hidden');menu.classList.remove('hidden');phaseEl.textContent='AGUARDANDO PARTIDA';});
 addEventListener('keydown',e=>{const key=e.key.toLowerCase();keys.add(key);if(['arrowup','arrowdown','arrowleft','arrowright',' ','enter'].includes(key))e.preventDefault();});
-addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));\naddEventListener('gamepadconnected',e=>showToast('Controle conectado: jogador '+(e.gamepad.index+1)));\naddEventListener('gamepaddisconnected',e=>showToast('Controle desconectado: jogador '+(e.gamepad.index+1)));
+addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+addEventListener('gamepadconnected',e=>showToast('Controle conectado: jogador '+(e.gamepad.index+1)));
+addEventListener('gamepaddisconnected',e=>showToast('Controle desconectado: jogador '+(e.gamepad.index+1)));
 function showToast(text){const el=document.getElementById('toast');el.textContent=text;el.style.opacity='1';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.opacity='0',1800);}
 function emit(x,y,color,n=8,power=150){for(let i=0;i<n;i++){const a=rand(0,Math.PI*2),s=rand(power*.25,power);particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.18,.5),max:.5,color,size:rand(1.2,3.2)});}}
 function shoot(p){if(p.shootCd>0||!p.alive)return;p.shootCd=.34;p.charge=0;const speed=520;bullets.push({x:p.x+Math.cos(p.a)*17,y:p.y+Math.sin(p.a)*17,vx:Math.cos(p.a)*speed+p.vx*.25,vy:Math.sin(p.a)*speed+p.vy*.25,owner:p.id,life:1.5,color:p.color});emit(p.x+Math.cos(p.a)*15,p.y+Math.sin(p.a)*15,p.color,3,50);}
